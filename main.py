@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional, List, Annotated
 from attrs import define
-from itertools import pairwise
+from itertools import pairwise, combinations
 from more_itertools import flatten
 import unittest
 
@@ -20,6 +20,15 @@ class Biome(Enum):
     MOUNTAIN = 2
     FOREST = 3
     SWAMP = 4
+
+
+ALL_BIOMES = (
+    Biome.DESERT,
+    Biome.FOREST,
+    Biome.MOUNTAIN,
+    Biome.SWAMP,
+    Biome.WATER,
+)
 
 
 class Territory(Enum):
@@ -47,6 +56,14 @@ class StructureColor(Enum):
     GREEN = 3
 
 
+STRUCT_COLORS = (
+    StructureColor.BLACK,
+    StructureColor.BLUE,
+    StructureColor.WHITE,
+    StructureColor.GREEN,
+)
+
+
 class StructureType(Enum):
     STONE = 0
     SHACK = 1
@@ -61,6 +78,15 @@ class Structure:
 class Clue:
     clue_type: ClueType
     data: tuple[Biome, Biome] | Biome | Territory | StructureColor | StructureType
+
+
+def generate_all_clues() -> list[Clue]:
+    within_two = (StructureType.SHACK, StructureType.STONE, Territory.BEAR, Territory.COUGAR)
+    clues = [Clue(ClueType.TWO_TERRAINS, pair) for pair in combinations(ALL_BIOMES, 2)]
+    clues += [Clue(ClueType.WITHIN_ONE, e) for e in (ALL_BIOMES + Territory.BOTH)]
+    clues += [Clue(ClueType.WITHIN_TWO, e) for e in within_two]
+    clues += [Clue(ClueType.WITHIN_THREE, e) for e in STRUCT_COLORS]
+    return clues
 
 
 @define
