@@ -22,6 +22,8 @@ cols = 4
 rows = 4
 
 small_square_size = 10
+small_circle_size = 10
+
 
 def draw_small_square(screen, row, col, color):
     x, y = odd_q_to_pixel(col, row)
@@ -29,7 +31,34 @@ def draw_small_square(screen, row, col, color):
     y += y_offset
     square_x = x - small_square_size // 2
     square_y = y - small_square_size // 2
-    pygame.draw.rect(screen, color, (square_x, square_y, small_square_size, small_square_size))
+
+    # Draw the black outline first
+    outline_size = 2  # You can adjust this value as needed
+    outline_x = square_x - outline_size
+    outline_y = square_y - outline_size
+    outline_width = small_square_size + outline_size * 2
+    outline_height = small_square_size + outline_size * 2
+    pygame.draw.rect(
+        screen, (0, 0, 0), (outline_x, outline_y, outline_width, outline_height)
+    )
+
+    # Draw the filled square on top of the outline
+    pygame.draw.rect(
+        screen, color, (square_x, square_y, small_square_size, small_square_size)
+    )
+
+
+def draw_small_circle(screen, row, col, color):
+    x, y = odd_q_to_pixel(col, row)
+    x += x_offset
+    y += y_offset
+
+    # Draw the black outline first
+    outline_size = 2  # You can adjust this value as needed
+    pygame.draw.circle(screen, (0, 0, 0), (x, y), small_circle_size + outline_size)
+
+    # Draw the filled circle on top of the outline
+    pygame.draw.circle(screen, color, (x, y), small_circle_size)
 
 
 # Create the screen
@@ -90,6 +119,24 @@ def odd_q_to_pixel(q, r):
 running = True
 clicked_tile = None
 selected_color = None
+small_squares = {}
+small_circles = {}
+
+
+def draw_hexagon(screen, hex_size, x, y, color):
+    pygame.draw.polygon(
+        screen,
+        color,
+        [
+            (x + hex_size, y),
+            (x + hex_size / 2, y - math.sqrt(3) / 2 * hex_size),
+            (x - hex_size / 2, y - math.sqrt(3) / 2 * hex_size),
+            (x - hex_size, y),
+            (x - hex_size / 2, y + math.sqrt(3) / 2 * hex_size),
+            (x + hex_size / 2, y + math.sqrt(3) / 2 * hex_size),
+        ],
+    )
+
 
 while running:
     for event in pygame.event.get():
@@ -108,6 +155,24 @@ while running:
                         print(
                             f"Clicked a button at Bundle {bundle_index + 1}, Label: {label}, Color: {color}"
                         )
+                        if clicked_tile and label == "False":
+                            # If the clicked_tile exists in small_circles, remove it from there
+                            if clicked_tile in small_circles:
+                                del small_circles[clicked_tile]
+
+                            # Add the clicked_tile to small_squares with the specified color
+                            small_squares[clicked_tile] = color
+                            print(small_squares)
+
+                        if clicked_tile and label == "True":
+                            # If the clicked_tile exists in small_squares, remove it from there
+                            if clicked_tile in small_squares:
+                                del small_squares[clicked_tile]
+
+                            # Add the clicked_tile to small_circles with the specified color
+                            small_circles[clicked_tile] = color
+                            print(small_circles)
+
             for row in range(rows):
                 for col in range(cols):
                     x, y = event.pos
@@ -140,23 +205,9 @@ while running:
 
             if clicked_tile == (row, col):
                 lighter_color = [min(c + 50, 255) for c in color]
-                pygame.draw.polygon(screen, tuple(lighter_color), [
-                    (x + hex_size, y),
-                    (x + hex_size / 2, y - math.sqrt(3) / 2 * hex_size),
-                    (x - hex_size / 2, y - math.sqrt(3) / 2 * hex_size),
-                    (x - hex_size, y),
-                    (x - hex_size / 2, y + math.sqrt(3) / 2 * hex_size),
-                    (x + hex_size / 2, y + math.sqrt(3) / 2 * hex_size)
-                ])
+                draw_hexagon(screen, hex_size, x, y, lighter_color)
             else:
-                pygame.draw.polygon(screen, color, [
-                    (x + hex_size, y),
-                    (x + hex_size / 2, y - math.sqrt(3) / 2 * hex_size),
-                    (x - hex_size / 2, y - math.sqrt(3) / 2 * hex_size),
-                    (x - hex_size, y),
-                    (x - hex_size / 2, y + math.sqrt(3) / 2 * hex_size),
-                    (x + hex_size / 2, y + math.sqrt(3) / 2 * hex_size)
-                ])
+                draw_hexagon(screen, hex_size, x, y, color)
 
     # Draw the button bundles on the screen
     for bundle_index, button_rects in enumerate(button_rectangles):
@@ -178,10 +229,14 @@ while running:
                 center=(button_x + button_width // 2, button_y + button_height // 2)
             )
             screen.blit(text, text_rect)
-            
-    if clicked_tile and selected_color:
-        draw_small_square(screen, clicked_tile[0], clicked_tile[1], selected_color)
 
+    for small_square in small_squares.keys():
+        tile, color = small_square, small_squares[small_square]
+        # print(clicked_tile, selected_color)
+        draw_small_square(screen, tile[0], tile[1], color)
+    for small_circle in small_circles.keys():
+        tile, color = small_circle, small_circles[small_circle]
+        draw_small_circle(screen, tile[0], tile[1], color)
 
     # Update the display
     pygame.display.flip()
