@@ -19,23 +19,47 @@ class Biome(Enum):
     def from_char(c:str):
         match c:
             case "d":
-                cur = Biome.DESERT
+                return Biome.DESERT
             case "w":
-                cur = Biome.WATER
+                return Biome.WATER
             case "m":
-                cur = Biome.MOUNTAIN
+                return Biome.MOUNTAIN
             case "f":
-                cur = Biome.FOREST
+                return Biome.FOREST
             case "s":
-                cur = Biome.SWAMP
+                return Biome.SWAMP
             case _:
-                cur = None
-        return cur
+                return None
+
+    def to_char(self) -> str:
+        match self:
+            case Biome.DESERT:
+                return "d"
+            case Biome.FOREST:
+                return "f"
+            case Biome.MOUNTAIN:
+                return "m"
+            case Biome.SWAMP:
+                return "s"
+            case Biome.WATER:
+                return "w"
+            case _:
+                raise Exception("Not reachable!")
+
 
 class Territory(Enum):
     COUGAR = 0
     BEAR = 1
     BOTH = 2
+
+    def from_char(c:str):
+        match c:
+            case "B":
+                return Territory.BEAR
+            case "C":
+                return Territory.COUGAR
+            case _:
+                return None
 
 
 class PieceType(Enum):
@@ -60,6 +84,7 @@ class StructureColor(Enum):
 class StructureType(Enum):
     STONE = 0
     SHACK = 1
+
 
 ALL_BIOMES = (
     Biome.DESERT,

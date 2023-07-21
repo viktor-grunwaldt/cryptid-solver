@@ -1,7 +1,7 @@
 from typing import Optional, List, Annotated
 from attrs import define
-from itertools import pairwise, combinations
-from more_itertools import flatten, chunked
+from itertools import combinations
+from more_itertools import chunked
 from tiles import Tiles
 
 from enums import (
@@ -23,6 +23,7 @@ class Structure:
     type: StructureType
 
 
+@define
 class Clue:
     clue_type: ClueType
     data: tuple[Biome, Biome] | Biome | Territory | StructureColor | StructureType
@@ -36,7 +37,7 @@ def generate_all_clues() -> list[Clue]:
         Territory.COUGAR,
     )
     clues = [Clue(ClueType.TWO_TERRAINS, pair) for pair in combinations(ALL_BIOMES, 2)]
-    clues += [Clue(ClueType.WITHIN_ONE, e) for e in (ALL_BIOMES + Territory.BOTH)]
+    clues += [Clue(ClueType.WITHIN_ONE, e) for e in (ALL_BIOMES + (Territory.BOTH,))]
     clues += [Clue(ClueType.WITHIN_TWO, e) for e in within_two]
     clues += [Clue(ClueType.WITHIN_THREE, e) for e in STRUCT_COLORS]
     return clues
@@ -53,7 +54,7 @@ class Field:
     biome: Biome
     territory: Optional[Territory]
     structure: Optional[Structure]
-    piece: Optional[list[Piece]]
+    pieces: Optional[list[Piece]]
 
 
 Grid = Annotated[
@@ -82,39 +83,46 @@ class Board:
     width: int = 12
     height: int = 9
     grid: Grid
-    
+
+    def create_grid(self, tiles: list[int], flips: list[bool]) -> Grid:
+        grid = []
+        tiles_fen = [Tiles.from_int(i) for i in tiles]
+        # load and rotate the tiles
+        for i in range(len(tiles_fen)):
+            if flips[i]:
+                tiles_fen[i] = (
+                    Tiles.rotate(tiles_fen[i][0]),
+                    Tiles.rotate(tiles_fen[i][1]),
+                )
+        # parse and merge tiles
+        for left, right in chunked(tiles_fen, 2):
+            left_biomes_tile, left_territory_tile = left
+            right_biomes_tile, right_territory_tile = right
+            new_biome_rows = [
+                l + r for l, r in zip(left_biomes_tile, right_biomes_tile)
+            ]
+            new_territory_rows = [
+                l + r for l, r in zip(left_territory_tile, right_territory_tile)
+            ]
+
+            for biome_row, territory_row in zip(new_biome_rows, new_territory_rows):
+                row = []
+                for biome_char, territiory in zip(biome_row, territory_row):
+                    t = Territory.from_char(territiory)
+                    b = Biome.from_char(biome_char)
+                    if b is None:
+                        raise ValueError(f"invalid character when parsing biome {biome_char}")
+                    row.append(Field(b, t, None, None))
+                grid.append(row)
+
+        return grid
+
     def __init__(
         self,
         tiles: list[int] = [1, 2, 3, 4, 5, 6],
         flips: list[bool] = [False] * 6,
     ):
-        # self.grid = [[None]*self.width for _ in range(self.height)]
-        self.grid = []
-        tiles_fen = [Tiles.from_int(i) for i in tiles]
-        # load and rotate the tiles
-        for i in range(len(tiles_fen)):
-            if flips[i]:
-                tiles_fen[i] = (Tiles.rotate(tiles_fen[i][0]), Tiles.rotate(tiles_fen[i][1]))
-        # parse and merge tiles
-        for left, right in chunked(tiles_fen, 2):
-            left_biomes_tile, left_territory_tile = left
-            right_biomes_tile, right_territory_tile = right
-            new_biome_rows = [l+r for l,r in zip(left_biomes_tile, right_biomes_tile)]
-            new_territory_rows = [l+r for l,r in zip(left_territory_tile, right_territory_tile)]
-
-            for biome_row, habitat_row in zip(new_biome_rows, new_territory_rows):
-                row = []
-                for biome_char, habitat in zip(biome_row, habitat_row):
-                    match habitat:
-                        case "B":
-                            territory_opt = Territory.BEAR
-                        case "C":
-                            territory_opt = Territory.COUGAR
-                        case _:
-                            territory_opt = None
-                    row.append(Field(Biome.from_char(biome_char), territory_opt,None, None))
-                self.grid.append(row)
-
+        self.grid = self.create_grid(tiles, flips)
 
     def __repr__(self) -> str:
         """basic printing, pieces not implemented"""
@@ -123,20 +131,8 @@ class Board:
         def fd(e: Optional[Field]) -> str:
             if e is None:
                 return " "
-            match e.biome:
-                case Biome.DESERT:
-                    return "d"
-                case Biome.FOREST:
-                    return "f"
-                case Biome.MOUNTAIN:
-                    return "m"
-                case Biome.SWAMP:
-                    return "s"
-                case Biome.WATER:
-                    return "w"
-                case _:
-                    return Exception("Not reachable! found: {}".format(e))
-        
+            return e.biome.to_char()
+
         for line in self.grid:
             res.append(" ".join(fd(e) for e in line))
 
