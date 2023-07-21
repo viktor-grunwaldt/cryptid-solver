@@ -1,14 +1,6 @@
 from enum import Enum
 
 
-class Color(Enum):
-    PURPLE = 0
-    RED = 1
-    GREEN = 2
-    BLUE = 3
-    ORANGE = 4
-
-
 class Biome(Enum):
     DESERT = 0
     WATER = 1
@@ -16,7 +8,7 @@ class Biome(Enum):
     FOREST = 3
     SWAMP = 4
 
-    def from_char(c:str):
+    def from_char(c: str):
         match c:
             case "d":
                 return Biome.DESERT
@@ -52,7 +44,7 @@ class Territory(Enum):
     BEAR = 1
     BOTH = 2
 
-    def from_char(c:str):
+    def from_char(c: str):
         match c:
             case "B":
                 return Territory.BEAR
@@ -86,6 +78,14 @@ class StructureType(Enum):
     SHACK = 1
 
 
+class PlayerColor(Enum):
+    RED = 0
+    ORANGE = 1
+    CYAN = 2
+    LIGHT_BLUE = 3
+    PURPLE = 4
+
+
 ALL_BIOMES = (
     Biome.DESERT,
     Biome.FOREST,
@@ -99,4 +99,12 @@ STRUCT_COLORS = (
     StructureColor.BLUE,
     StructureColor.WHITE,
     StructureColor.GREEN,
+)
+
+PLAYER_COLORS = (
+    PlayerColor.RED,
+    PlayerColor.ORANGE,
+    PlayerColor.CYAN,
+    PlayerColor.LIGHT_BLUE,
+    PlayerColor.PURPLE,
 )
