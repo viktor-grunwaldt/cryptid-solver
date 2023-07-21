@@ -54,7 +54,7 @@ class Field:
     biome: Biome
     territory: Optional[Territory]
     structure: Optional[Structure]
-    piece: Optional[list[Piece]]
+    pieces: Optional[list[Piece]]
 
 
 Grid = Annotated[
@@ -108,13 +108,11 @@ class Board:
             for biome_row, territory_row in zip(new_biome_rows, new_territory_rows):
                 row = []
                 for biome_char, territiory in zip(biome_row, territory_row):
-                    h = Territory.from_char(territiory)
-                    if h is None:
-                        raise ValueError("invalid character in biome")
+                    t = Territory.from_char(territiory)
                     b = Biome.from_char(biome_char)
                     if b is None:
-                        raise ValueError("invalid character in biome")
-                    row.append(Field(b, territory_opt, None, None))
+                        raise ValueError(f"invalid character when parsing biome {biome_char}")
+                    row.append(Field(b, t, None, None))
                 grid.append(row)
 
         return grid
@@ -133,19 +131,7 @@ class Board:
         def fd(e: Optional[Field]) -> str:
             if e is None:
                 return " "
-            match e.biome:
-                case Biome.DESERT:
-                    return "d"
-                case Biome.FOREST:
-                    return "f"
-                case Biome.MOUNTAIN:
-                    return "m"
-                case Biome.SWAMP:
-                    return "s"
-                case Biome.WATER:
-                    return "w"
-                case _:
-                    raise Exception("Not reachable! found: {}".format(e))
+            return e.biome.to_char()
 
         for line in self.grid:
             res.append(" ".join(fd(e) for e in line))

@@ -31,6 +31,21 @@ class Biome(Enum):
             case _:
                 return None
 
+    def to_char(self) -> str:
+        match self:
+            case Biome.DESERT:
+                return "d"
+            case Biome.FOREST:
+                return "f"
+            case Biome.MOUNTAIN:
+                return "m"
+            case Biome.SWAMP:
+                return "s"
+            case Biome.WATER:
+                return "w"
+            case _:
+                raise Exception("Not reachable!")
+
 
 class Territory(Enum):
     COUGAR = 0
