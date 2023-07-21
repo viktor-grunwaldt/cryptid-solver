@@ -37,3 +37,14 @@ def create_button_bundles(screen, button_width, button_height, button_gap, bundl
         bundle_x += len(button_rectangles) * (button_width + button_gap)
 
     return button_rectangles_list
+
+def create_left_side_button_bundle(screen):
+    button_width = 100
+    button_height = 50
+    button_gap = 10
+    bundle_gap = 20
+    bundle_colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]
+
+    # Create two columns and four rows of button bundles
+    create_button_bundles(screen, button_width, button_height, button_gap, bundle_gap, bundle_colors[:2])
+    create_button_bundles(screen, button_width, button_height, button_gap, bundle_gap + (button_height + button_gap) * 2, bundle_colors[2:])

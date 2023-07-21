@@ -1,7 +1,7 @@
 import pygame
 import math
-from buttons import create_button_bundles
-from board import Board
+from buttons import create_button_bundles, create_left_side_button_bundle
+from board import Board, Structure
 from enums import Biome, StructureColor, StructureType, Territory
 
 # Rest of the code remains the same...
@@ -135,6 +135,7 @@ button_rectangles = create_button_bundles(
     screen, button_width, button_height, button_gap, bundle_gap, bundle_colors
 )
 
+left_side_buttons = create_left_side_button_bundle(screen)
 
 # Function to center the board on the screen
 def center_board(screen_width, screen_height, cols, rows):
@@ -160,6 +161,43 @@ selected_color = None
 small_squares = {}
 small_circles = {}
 
+
+
+# Define the combinations and their corresponding actions here
+combinations = {
+    ('r', 't'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "True", bundle_colors[0]),
+    ('r', 'f'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "False", bundle_colors[0]),
+    
+    ('y', 't'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "True", bundle_colors[1]),
+    ('y', 'f'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "False", bundle_colors[1]),
+    
+    ('c', 't'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "True", bundle_colors[2]),
+    ('c', 'f'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "False", bundle_colors[2]),
+    
+    ('b', 't'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "True", bundle_colors[3]),
+    ('b', 'f'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "False", bundle_colors[3]),
+    
+    ('v', 't'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "True", bundle_colors[4]),
+    ('v', 'f'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "False", bundle_colors[4]),
+    
+    ('w', 'o'): lambda: add_structure(clicked_tile, StructureType.STONE, StructureColor.WHITE),
+    ('b', 'o'): lambda: add_structure(clicked_tile, StructureType.STONE, StructureColor.BLUE),
+    ('g', 'o'): lambda: add_structure(clicked_tile, StructureType.STONE, StructureColor.GREEN),
+    ('k', 'o'): lambda: add_structure(clicked_tile, StructureType.STONE, StructureColor.BLACK),
+    
+    ('w', 's'): lambda: add_structure(clicked_tile, StructureType.SHACK, StructureColor.WHITE),
+    ('b', 's'): lambda: add_structure(clicked_tile, StructureType.SHACK, StructureColor.BLUE),
+    ('g', 's'): lambda: add_structure(clicked_tile, StructureType.SHACK, StructureColor.GREEN),
+    ('k', 's'): lambda: add_structure(clicked_tile, StructureType.SHACK, StructureColor.BLACK),
+    
+    ('c', 's'): lambda: remove_structure(clicked_tile),
+}
+
+def add_structure(clicked_tile, structure_type, structure_color):
+    main_board[clicked_tile[0]][clicked_tile[1]].structure = Structure(structure_color, structure_type)
+    
+def remove_structure(clicked_tile):
+    main_board[clicked_tile[0]][clicked_tile[1]].structure = None
 
 def draw_hexagon(screen, hex_size, x, y, color):
     pygame.draw.polygon(
@@ -191,10 +229,55 @@ def draw_lines_close_to_hexagon_edges(screen, hex_size, x, y, line_length, line_
 
 
 
+def draw_player_choice(clicked_tile, small_squares, small_circles, label, color):
+    if clicked_tile and label == "False":
+                            # If the clicked_tile exists in small_circles, remove it from there
+        if clicked_tile in small_circles:
+            del small_circles[clicked_tile]
+
+                            # Add the clicked_tile to small_squares with the specified color
+        small_squares[clicked_tile] = color
+        print(small_squares)
+
+    if clicked_tile and label == "True":
+                            # If the clicked_tile exists in small_squares, remove it from there
+        if clicked_tile in small_squares:
+            del small_squares[clicked_tile]
+
+                            # Add the clicked_tile to small_circles with the specified color
+        small_circles[clicked_tile] = color
+        print(small_circles)
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+            
+        if event.type == pygame.KEYDOWN:            
+            keys_pressed = pygame.key.get_pressed()
+            button_combination = [
+                'r' if keys_pressed[pygame.K_r] else '',
+                'y' if keys_pressed[pygame.K_y] else '',
+                'c' if keys_pressed[pygame.K_c] else '',
+                'b' if keys_pressed[pygame.K_b] else '',
+                'v' if keys_pressed[pygame.K_v] else '',
+                't' if keys_pressed[pygame.K_t] else '',
+                'f' if keys_pressed[pygame.K_f] else '',
+                
+                'w' if keys_pressed[pygame.K_w] else '',
+                'g' if keys_pressed[pygame.K_g] else '',
+                'k' if keys_pressed[pygame.K_k] else '',
+                
+                's' if keys_pressed[pygame.K_s] else '',
+                'o' if keys_pressed[pygame.K_o] else '',
+                
+            ]
+            button_combination = tuple(filter(None, button_combination))
+            print(button_combination)
+            
+            # Check if the current button combination is in the combinations dictionary
+            if button_combination in combinations:
+                combinations[button_combination]()  # Execute the corresponding action
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             # Check if any button is clicked
@@ -208,24 +291,7 @@ while running:
                         print(
                             f"Clicked a button at Bundle {bundle_index + 1}, Label: {label}, Color: {color}"
                         )
-                        if clicked_tile and label == "False":
-                            # If the clicked_tile exists in small_circles, remove it from there
-                            if clicked_tile in small_circles:
-                                del small_circles[clicked_tile]
-
-                            # Add the clicked_tile to small_squares with the specified color
-                            small_squares[clicked_tile] = color
-                            print(small_squares)
-
-                        if clicked_tile and label == "True":
-                            # If the clicked_tile exists in small_squares, remove it from there
-                            if clicked_tile in small_squares:
-                                del small_squares[clicked_tile]
-
-                            # Add the clicked_tile to small_circles with the specified color
-                            small_circles[clicked_tile] = color
-                            print(small_circles)
-
+                        draw_player_choice(clicked_tile, small_squares, small_circles, label, color)
             for row in range(rows):
                 for col in range(cols):
                     x, y = event.pos
