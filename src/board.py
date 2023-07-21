@@ -80,7 +80,7 @@ class Board:
     """cryptid uses hexgrid composed of 6 tiles which compose the playfield"""
 
     width: int = 12
-    height: int = 12
+    height: int = 9
     grid: Grid
     
     def __init__(

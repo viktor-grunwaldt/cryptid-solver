@@ -2,6 +2,7 @@ import pygame
 import math
 from buttons import create_button_bundles
 from board import Board
+from enums import Biome, StructureColor, StructureType, Territory
 
 # Rest of the code remains the same...
 
@@ -9,20 +10,24 @@ from board import Board
 pygame.init()
 
 # Define the screen dimensions
-screen_width, screen_height = 1400, 600
+screen_width, screen_height = 1400, 1000
 
-main_board = [
-    ["w", "d", "w", "f"],
-    ["w", "m", "f", "s"],
-    ["d", "m", "w", "d"],
-    ["f", "w", "s", "s"],
-]
+# main_board = [
+#     ["w", "d", "w", "f"],
+#     ["w", "m", "f", "s"],
+#     ["d", "m", "w", "d"],
+#     ["f", "w", "s", "s"],
+# ]
 
-cols = 4
-rows = 4
+main_board = Board().grid
+
+cols = Board.width
+rows = Board.height
 
 small_square_size = 10
 small_circle_size = 10
+small_triangle_size = 10
+small_hexagon_size = 10
 
 
 def draw_small_square(screen, row, col, color):
@@ -61,6 +66,25 @@ def draw_small_circle(screen, row, col, color):
     pygame.draw.circle(screen, color, (x, y), small_circle_size)
 
 
+def draw_small_triangle(screen, row, col, color):
+    x, y = odd_q_to_pixel(col, row)
+    x += x_offset
+    y += y_offset
+
+    # Define the points of the triangle
+    triangle_points = [
+        (x, y - small_triangle_size),                          # Top vertex
+        (x - small_triangle_size * math.sqrt(3) / 2, y + small_triangle_size / 2),  # Bottom-left vertex
+        (x + small_triangle_size * math.sqrt(3) / 2, y + small_triangle_size / 2),  # Bottom-right vertex
+    ]
+
+    # Draw the black outline first (optional, you can adjust the outline size)
+    outline_size = 2
+    pygame.draw.polygon(screen, (0, 0, 0), triangle_points, outline_size)
+
+    # Draw the filled triangle on top of the outline
+    pygame.draw.polygon(screen, color, triangle_points)
+
 # Create the screen
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Hexagonal Map with Buttons")
@@ -73,23 +97,37 @@ bundle_gap = 50
 button_gap = 20
 
 # Define the size of each hexagon and the gap between hexagons
-hex_size = 30
+hex_size = 40
 hex_gap = 5
 
 bundle_colors = [
-    (255, 0, 0),  # Red
-    (255, 165, 0),  # Orange
-    (0, 128, 0),  # Green
-    (173, 216, 230),  # Light blue
-    (238, 130, 238),  # Violet
+    (223, 66, 59),  # Red
+    (253, 201, 27),  # Orange
+    (52, 199, 206),  # Cyan
+    (174, 228, 255),  # Light blue
+    (126, 85, 207),  # Violet
 ]
 
+# colors = {
+#     "w": (0, 0, 255),  # blue for water
+#     "d": (244, 164, 96),  # sandy brown for desert
+#     "m": (139, 69, 19),  # brown for mountain
+#     "s": (128, 0, 128),  # dark purple for swamp
+#     "f": (0, 100, 0),  # dark green for forest
+# }
+
 colors = {
-    "w": (0, 0, 255),  # blue for water
-    "d": (244, 164, 96),  # sandy brown for desert
-    "m": (139, 69, 19),  # brown for mountain
-    "s": (128, 0, 128),  # dark purple for swamp
-    "f": (0, 100, 0),  # dark green for forest
+    Biome.WATER: (97, 150, 202),  # blue for water
+    Biome.DESERT: (255, 212, 81),  # sandy brown for desert
+    Biome.MOUNTAIN: (185, 185, 185),  # brown for mountain
+    Biome.SWAMP: (117, 87, 115),  # dark purple for swamp
+    Biome.FOREST: (113, 173, 103),  # dark green for forest
+    
+    StructureColor.BLACK: (0, 0, 0),      # black
+    StructureColor.BLUE: (0, 0, 255),     # blue
+    StructureColor.WHITE: (255, 255, 255),# white
+    StructureColor.GREEN: (0, 128, 0),    # green
+
 }
 
 # Get the button rectangles using the function from button_bundle.py
@@ -136,6 +174,21 @@ def draw_hexagon(screen, hex_size, x, y, color):
             (x + hex_size / 2, y + math.sqrt(3) / 2 * hex_size),
         ],
     )
+
+def draw_lines_close_to_hexagon_edges(screen, hex_size, x, y, line_length, line_color):
+    hex_size = hex_size * 0.8
+    points = [
+        (x + hex_size, y),
+        (x + hex_size / 2, y - math.sqrt(3) / 2 * hex_size),
+        (x - hex_size / 2, y - math.sqrt(3) / 2 * hex_size),
+        (x - hex_size, y),
+        (x - hex_size / 2, y + math.sqrt(3) / 2 * hex_size),
+        (x + hex_size / 2, y + math.sqrt(3) / 2 * hex_size),
+    ]
+
+    for i in range(6):
+        pygame.draw.line(screen, line_color, points[i], points[(i + 1) % 6], line_length)
+
 
 
 while running:
@@ -193,12 +246,15 @@ while running:
     # Center the board on the screen
     x_offset, y_offset = center_board(screen_width, screen_height, cols, rows)
 
+    
     # Draw each hexagon on the screen
     for row in range(rows):
         for col in range(cols):
+            # print(f'{row}/{rows}', f'{col}/{cols}')
             value = main_board[row][col]
             # print(main_board.grid)
-            color = colors.get(value, (255, 255, 255))
+            # print(value)
+            color = colors.get(value.biome, (255, 255, 255))
             x, y = odd_q_to_pixel(col, row)
             x += x_offset
             y += y_offset
@@ -208,6 +264,16 @@ while running:
                 draw_hexagon(screen, hex_size, x, y, lighter_color)
             else:
                 draw_hexagon(screen, hex_size, x, y, color)
+            if value.territory is not None:
+                if value.territory == Territory.COUGAR:
+                    draw_lines_close_to_hexagon_edges(screen, hex_size, x, y, 2, (255, 0, 0))
+                elif value.territory == Territory.BEAR:
+                    draw_lines_close_to_hexagon_edges(screen, hex_size, x, y, 2, (0, 0, 0))
+            if value.structure is not None:
+                if value.structure.type == StructureType.STONE:
+                    draw_hexagon(screen, small_hexagon_size, x, y, colors[value.structure.color])
+                elif value.structure.type == StructureType.SHACK:
+                    draw_small_triangle(screen, row, col, colors[value.structure.color])
 
     # Draw the button bundles on the screen
     for bundle_index, button_rects in enumerate(button_rectangles):
