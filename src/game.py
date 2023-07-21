@@ -1,7 +1,8 @@
 import pygame
 import math
-from buttons import create_button_bundles
-from board import Board
+from buttons import create_button_bundles, create_left_side_button_bundle
+from board import Board, Structure
+from enums import Biome, StructureColor, StructureType, Territory
 
 # Rest of the code remains the same...
 
@@ -9,20 +10,24 @@ from board import Board
 pygame.init()
 
 # Define the screen dimensions
-screen_width, screen_height = 1400, 600
+screen_width, screen_height = 1400, 1000
 
-main_board = [
-    ["w", "d", "w", "f"],
-    ["w", "m", "f", "s"],
-    ["d", "m", "w", "d"],
-    ["f", "w", "s", "s"],
-]
+# main_board = [
+#     ["w", "d", "w", "f"],
+#     ["w", "m", "f", "s"],
+#     ["d", "m", "w", "d"],
+#     ["f", "w", "s", "s"],
+# ]
 
-cols = 4
-rows = 4
+main_board = Board().grid
+
+cols = Board.width
+rows = Board.height
 
 small_square_size = 10
 small_circle_size = 10
+small_triangle_size = 10
+small_hexagon_size = 10
 
 
 def draw_small_square(screen, row, col, color):
@@ -61,6 +66,25 @@ def draw_small_circle(screen, row, col, color):
     pygame.draw.circle(screen, color, (x, y), small_circle_size)
 
 
+def draw_small_triangle(screen, row, col, color):
+    x, y = odd_q_to_pixel(col, row)
+    x += x_offset
+    y += y_offset
+
+    # Define the points of the triangle
+    triangle_points = [
+        (x, y - small_triangle_size),                          # Top vertex
+        (x - small_triangle_size * math.sqrt(3) / 2, y + small_triangle_size / 2),  # Bottom-left vertex
+        (x + small_triangle_size * math.sqrt(3) / 2, y + small_triangle_size / 2),  # Bottom-right vertex
+    ]
+
+    # Draw the black outline first (optional, you can adjust the outline size)
+    outline_size = 2
+    pygame.draw.polygon(screen, (0, 0, 0), triangle_points, outline_size)
+
+    # Draw the filled triangle on top of the outline
+    pygame.draw.polygon(screen, color, triangle_points)
+
 # Create the screen
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Hexagonal Map with Buttons")
@@ -73,23 +97,37 @@ bundle_gap = 50
 button_gap = 20
 
 # Define the size of each hexagon and the gap between hexagons
-hex_size = 30
+hex_size = 40
 hex_gap = 5
 
 bundle_colors = [
-    (255, 0, 0),  # Red
-    (255, 165, 0),  # Orange
-    (0, 128, 0),  # Green
-    (173, 216, 230),  # Light blue
-    (238, 130, 238),  # Violet
+    (223, 66, 59),  # Red
+    (253, 201, 27),  # Orange
+    (52, 199, 206),  # Cyan
+    (174, 228, 255),  # Light blue
+    (126, 85, 207),  # Violet
 ]
 
+# colors = {
+#     "w": (0, 0, 255),  # blue for water
+#     "d": (244, 164, 96),  # sandy brown for desert
+#     "m": (139, 69, 19),  # brown for mountain
+#     "s": (128, 0, 128),  # dark purple for swamp
+#     "f": (0, 100, 0),  # dark green for forest
+# }
+
 colors = {
-    "w": (0, 0, 255),  # blue for water
-    "d": (244, 164, 96),  # sandy brown for desert
-    "m": (139, 69, 19),  # brown for mountain
-    "s": (128, 0, 128),  # dark purple for swamp
-    "f": (0, 100, 0),  # dark green for forest
+    Biome.WATER: (97, 150, 202),  # blue for water
+    Biome.DESERT: (255, 212, 81),  # sandy brown for desert
+    Biome.MOUNTAIN: (185, 185, 185),  # brown for mountain
+    Biome.SWAMP: (117, 87, 115),  # dark purple for swamp
+    Biome.FOREST: (113, 173, 103),  # dark green for forest
+    
+    StructureColor.BLACK: (0, 0, 0),      # black
+    StructureColor.BLUE: (0, 0, 255),     # blue
+    StructureColor.WHITE: (255, 255, 255),# white
+    StructureColor.GREEN: (0, 128, 0),    # green
+
 }
 
 # Get the button rectangles using the function from button_bundle.py
@@ -97,6 +135,7 @@ button_rectangles = create_button_bundles(
     screen, button_width, button_height, button_gap, bundle_gap, bundle_colors
 )
 
+left_side_buttons = create_left_side_button_bundle(screen)
 
 # Function to center the board on the screen
 def center_board(screen_width, screen_height, cols, rows):
@@ -123,6 +162,43 @@ small_squares = {}
 small_circles = {}
 
 
+
+# Define the combinations and their corresponding actions here
+combinations = {
+    ('r', 't'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "True", bundle_colors[0]),
+    ('r', 'f'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "False", bundle_colors[0]),
+    
+    ('y', 't'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "True", bundle_colors[1]),
+    ('y', 'f'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "False", bundle_colors[1]),
+    
+    ('c', 't'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "True", bundle_colors[2]),
+    ('c', 'f'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "False", bundle_colors[2]),
+    
+    ('b', 't'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "True", bundle_colors[3]),
+    ('b', 'f'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "False", bundle_colors[3]),
+    
+    ('v', 't'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "True", bundle_colors[4]),
+    ('v', 'f'): lambda: draw_player_choice(clicked_tile, small_squares, small_circles, "False", bundle_colors[4]),
+    
+    ('w', 'o'): lambda: add_structure(clicked_tile, StructureType.STONE, StructureColor.WHITE),
+    ('b', 'o'): lambda: add_structure(clicked_tile, StructureType.STONE, StructureColor.BLUE),
+    ('g', 'o'): lambda: add_structure(clicked_tile, StructureType.STONE, StructureColor.GREEN),
+    ('k', 'o'): lambda: add_structure(clicked_tile, StructureType.STONE, StructureColor.BLACK),
+    
+    ('w', 's'): lambda: add_structure(clicked_tile, StructureType.SHACK, StructureColor.WHITE),
+    ('b', 's'): lambda: add_structure(clicked_tile, StructureType.SHACK, StructureColor.BLUE),
+    ('g', 's'): lambda: add_structure(clicked_tile, StructureType.SHACK, StructureColor.GREEN),
+    ('k', 's'): lambda: add_structure(clicked_tile, StructureType.SHACK, StructureColor.BLACK),
+    
+    ('c', 's'): lambda: remove_structure(clicked_tile),
+}
+
+def add_structure(clicked_tile, structure_type, structure_color):
+    main_board[clicked_tile[0]][clicked_tile[1]].structure = Structure(structure_color, structure_type)
+    
+def remove_structure(clicked_tile):
+    main_board[clicked_tile[0]][clicked_tile[1]].structure = None
+
 def draw_hexagon(screen, hex_size, x, y, color):
     pygame.draw.polygon(
         screen,
@@ -137,11 +213,71 @@ def draw_hexagon(screen, hex_size, x, y, color):
         ],
     )
 
+def draw_lines_close_to_hexagon_edges(screen, hex_size, x, y, line_length, line_color):
+    hex_size = hex_size * 0.8
+    points = [
+        (x + hex_size, y),
+        (x + hex_size / 2, y - math.sqrt(3) / 2 * hex_size),
+        (x - hex_size / 2, y - math.sqrt(3) / 2 * hex_size),
+        (x - hex_size, y),
+        (x - hex_size / 2, y + math.sqrt(3) / 2 * hex_size),
+        (x + hex_size / 2, y + math.sqrt(3) / 2 * hex_size),
+    ]
+
+    for i in range(6):
+        pygame.draw.line(screen, line_color, points[i], points[(i + 1) % 6], line_length)
+
+
+
+def draw_player_choice(clicked_tile, small_squares, small_circles, label, color):
+    if clicked_tile and label == "False":
+                            # If the clicked_tile exists in small_circles, remove it from there
+        if clicked_tile in small_circles:
+            del small_circles[clicked_tile]
+
+                            # Add the clicked_tile to small_squares with the specified color
+        small_squares[clicked_tile] = color
+        print(small_squares)
+
+    if clicked_tile and label == "True":
+                            # If the clicked_tile exists in small_squares, remove it from there
+        if clicked_tile in small_squares:
+            del small_squares[clicked_tile]
+
+                            # Add the clicked_tile to small_circles with the specified color
+        small_circles[clicked_tile] = color
+        print(small_circles)
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+            
+        if event.type == pygame.KEYDOWN:            
+            keys_pressed = pygame.key.get_pressed()
+            button_combination = [
+                'r' if keys_pressed[pygame.K_r] else '',
+                'y' if keys_pressed[pygame.K_y] else '',
+                'c' if keys_pressed[pygame.K_c] else '',
+                'b' if keys_pressed[pygame.K_b] else '',
+                'v' if keys_pressed[pygame.K_v] else '',
+                't' if keys_pressed[pygame.K_t] else '',
+                'f' if keys_pressed[pygame.K_f] else '',
+                
+                'w' if keys_pressed[pygame.K_w] else '',
+                'g' if keys_pressed[pygame.K_g] else '',
+                'k' if keys_pressed[pygame.K_k] else '',
+                
+                's' if keys_pressed[pygame.K_s] else '',
+                'o' if keys_pressed[pygame.K_o] else '',
+                
+            ]
+            button_combination = tuple(filter(None, button_combination))
+            print(button_combination)
+            
+            # Check if the current button combination is in the combinations dictionary
+            if button_combination in combinations:
+                combinations[button_combination]()  # Execute the corresponding action
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             # Check if any button is clicked
@@ -155,24 +291,7 @@ while running:
                         print(
                             f"Clicked a button at Bundle {bundle_index + 1}, Label: {label}, Color: {color}"
                         )
-                        if clicked_tile and label == "False":
-                            # If the clicked_tile exists in small_circles, remove it from there
-                            if clicked_tile in small_circles:
-                                del small_circles[clicked_tile]
-
-                            # Add the clicked_tile to small_squares with the specified color
-                            small_squares[clicked_tile] = color
-                            print(small_squares)
-
-                        if clicked_tile and label == "True":
-                            # If the clicked_tile exists in small_squares, remove it from there
-                            if clicked_tile in small_squares:
-                                del small_squares[clicked_tile]
-
-                            # Add the clicked_tile to small_circles with the specified color
-                            small_circles[clicked_tile] = color
-                            print(small_circles)
-
+                        draw_player_choice(clicked_tile, small_squares, small_circles, label, color)
             for row in range(rows):
                 for col in range(cols):
                     x, y = event.pos
@@ -193,12 +312,15 @@ while running:
     # Center the board on the screen
     x_offset, y_offset = center_board(screen_width, screen_height, cols, rows)
 
+    
     # Draw each hexagon on the screen
     for row in range(rows):
         for col in range(cols):
+            # print(f'{row}/{rows}', f'{col}/{cols}')
             value = main_board[row][col]
             # print(main_board.grid)
-            color = colors.get(value, (255, 255, 255))
+            # print(value)
+            color = colors.get(value.biome, (255, 255, 255))
             x, y = odd_q_to_pixel(col, row)
             x += x_offset
             y += y_offset
@@ -208,6 +330,16 @@ while running:
                 draw_hexagon(screen, hex_size, x, y, lighter_color)
             else:
                 draw_hexagon(screen, hex_size, x, y, color)
+            if value.territory is not None:
+                if value.territory == Territory.COUGAR:
+                    draw_lines_close_to_hexagon_edges(screen, hex_size, x, y, 2, (255, 0, 0))
+                elif value.territory == Territory.BEAR:
+                    draw_lines_close_to_hexagon_edges(screen, hex_size, x, y, 2, (0, 0, 0))
+            if value.structure is not None:
+                if value.structure.type == StructureType.STONE:
+                    draw_hexagon(screen, small_hexagon_size, x, y, colors[value.structure.color])
+                elif value.structure.type == StructureType.SHACK:
+                    draw_small_triangle(screen, row, col, colors[value.structure.color])
 
     # Draw the button bundles on the screen
     for bundle_index, button_rects in enumerate(button_rectangles):
