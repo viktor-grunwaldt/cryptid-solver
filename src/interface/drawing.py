@@ -109,3 +109,23 @@ def draw_small_triangle(screen, row, col, color, triangle_size, x_offset, y_offs
 
     # Draw the filled triangle on top of the outline
     pygame.draw.polygon(screen, color, triangle_points)
+
+def draw_small_octagon(screen, row, col, color, octagon_size, x_offset, y_offset):
+    x, y = odd_q_to_pixel(col, row)
+    x += x_offset
+    y += y_offset
+
+    # Calculate the vertices of the octagon
+    angle_offset = math.pi / 8  # Angle offset for octagon
+    vertices = []
+    for i in range(8):
+        angle = angle_offset + i * (2 * math.pi) / 8
+        vertex_x = x + int(octagon_size * math.cos(angle))
+        vertex_y = y + int(octagon_size * math.sin(angle))
+        vertices.append((vertex_x, vertex_y))
+
+    # Draw the black outline first
+    pygame.draw.polygon(screen, (0, 0, 0), vertices, 2)
+
+    # Draw the filled octagon on top of the outline
+    pygame.draw.polygon(screen, color, vertices)

@@ -85,6 +85,12 @@ class PlayerColor(Enum):
     LIGHT_BLUE = 3
     PURPLE = 4
 
+class Structure:
+    def __init__(self, color: StructureColor, stype: StructureType):
+        self.color = color
+        self.type = stype
+       
+
 
 ALL_BIOMES = (
     Biome.DESERT,

@@ -58,3 +58,16 @@ colors = {
     StructureColor.WHITE: (255, 255, 255),  # white
     StructureColor.GREEN: (0, 128, 0),  # green
 }
+
+def get_key_by_value(dictionary, target_value):
+    for key, value in dictionary.items():
+        if value == target_value:
+            return key
+    return None  # Return None if the value is not found in the dictionary
+
+structure_bundle_colors = [
+    (0, 0, 0),  # Black
+    (0, 0, 255),  # Blue
+    (255, 255, 255),  # White
+    (0, 128, 0),  # Green
+]
