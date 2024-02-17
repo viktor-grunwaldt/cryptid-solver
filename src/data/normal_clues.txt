@@ -1,0 +1,32 @@
+The habitat is on water or mountain
+The habitat is on water or forest
+The habitat is on water or swamp
+The habitat is on water or desert
+The habitat is on mountain or water
+The habitat is on mountain or forest
+The habitat is on mountain or swamp
+The habitat is on mountain or desert
+The habitat is on forest or water
+The habitat is on forest or mountain
+The habitat is on forest or swamp
+The habitat is on forest or desert
+The habitat is on swamp or water
+The habitat is on swamp or mountain
+The habitat is on swamp or forest
+The habitat is on swamp or desert
+The habitat is on desert or water
+The habitat is on desert or mountain
+The habitat is on desert or forest
+The habitat is on desert or swamp
+The habitat is within one space of water
+The habitat is within one space of mountain
+The habitat is within one space of forest
+The habitat is within one space of swamp
+The habitat is within one space of desert
+The habitat is within two spaces of a standing stone
+The habitat is within two spaces of a abandoned shack
+The habitat is within two spaces of cougar territory
+The habitat is within two spaces of bear territory
+The habitat is within three spaces of a green structure
+The habitat is within three spaces of a white structure
+The habitat is within three spaces of a blue structure
