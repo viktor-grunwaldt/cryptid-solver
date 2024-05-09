@@ -18,8 +18,10 @@ from interface.support import bundle_colors, colors, odd_q_to_pixel, draw_player
 def create_board(number_of_players: int, difficulty: int):
 
     hard = False
-    if difficulty == 2:
+    if difficulty == 1:
         hard = True
+
+    print(f"Difficulty: {difficulty}, Hard: {hard}")
 
     
     # Define the screen dimensions
@@ -55,8 +57,13 @@ def create_board(number_of_players: int, difficulty: int):
     button_rectangles = create_button_bundles(
         screen, button_width, button_height, button_gap, bundle_gap, bundle_colors[0:number_of_players]
     )
+    skip_black = 0
+    if not hard:
+        skip_black = 1
+
+    print(structure_bundle_colors[skip_black:])
     structures_button_rectangles = create_button_bundles(
-        screen, button_width, button_height, button_gap, bundle_gap, structure_bundle_colors
+        screen, button_width, button_height, button_gap, bundle_gap, structure_bundle_colors[0:-skip_black]
     ) 
 
     left_side_buttons = create_left_side_button_bundle(screen)

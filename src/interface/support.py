@@ -66,8 +66,8 @@ def get_key_by_value(dictionary, target_value):
     return None  # Return None if the value is not found in the dictionary
 
 structure_bundle_colors = [
-    (0, 0, 0),  # Black
     (0, 0, 255),  # Blue
     (255, 255, 255),  # White
     (0, 128, 0),  # Green
+    (0, 0, 0),  # Black
 ]

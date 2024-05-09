@@ -7,6 +7,9 @@ from pygame_menu import Menu, themes
 
 
 def main():
+
+    os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (10,10)
+
     pygame.init()
 
     # Set up the display
@@ -23,7 +26,7 @@ def main():
 
     # Initial number of players
     num_players = 3
-    difficulty = 1
+    difficulty = 0
 
     # Create a menu
     menu = Menu("Cryptid Solver", 500, 300, theme=themes.THEME_BLUE)
@@ -38,7 +41,7 @@ def main():
 
     # Add a dropdown for number of players
     menu.add.selector("Number of Players: ", [('2', 2), ('3', 3), ('4', 4), ('5', 5)], onchange=lambda _, value: set_num_players(value), default=1)
-    menu.add.selector('Difficulty :', [('Easy', 1), ('Hard', 2)], onchange=lambda _, value: set_difficulty(value), default=0)
+    menu.add.selector('Difficulty :', [('Easy', 0), ('Hard', 1)], onchange=lambda _, value: set_difficulty(value), default=0)
     # Function to start the game
     def start_game():
         solver.create_board(num_players, difficulty)
