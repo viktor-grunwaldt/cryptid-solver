@@ -46,3 +46,23 @@ deactivate
 ```
 
 And you can remove `venv` folder.
+
+## TODO
+
+- [x] Add buttons to add structures
+  - [ ] Make that only one structure of each type can exist on the map
+- [ ] Add ability to put multiple circles on one field
+- [ ] Display viable clues for each player
+- [x] Add ability to select number of players
+- [ ] Function for deducting the clues
+
+## Additional information
+
+### All possible clues
+
+1. The habitat is (not) on {biome} or {biome}
+2. The habitat is (not) within one space of {biome}
+3. The habitat is (not) within one space of either animal territory
+4. The habitat is (not) within two spaces of a {structure}
+5. The habitat is (not) within two spaces of {animal} territory
+6. The habitat is (not) within three spaces of a {color} structure
