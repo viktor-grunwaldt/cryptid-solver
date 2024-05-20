@@ -46,7 +46,7 @@ def create_board(number_of_players: int, difficulty: int):
     button_gap = 20
 
     small_square_size = 10
-    small_circle_size = 10
+    small_circle_size = 7
     small_triangle_size = 20
     small_octagon_size = 20
 
@@ -93,6 +93,7 @@ def create_board(number_of_players: int, difficulty: int):
             list_of_clues += file.read().splitlines()
 
     structure_placed = False
+    alert = False
     structures = {}
     while running:
         for event in pygame.event.get():
@@ -102,8 +103,10 @@ def create_board(number_of_players: int, difficulty: int):
             if event.type == pygame.KEYDOWN:
                 key_pressed(main_board, clicked_tile, small_squares, small_circles)
 
+            
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Check if any button is clicked
+                
                 x, y = event.pos
                 if structure_placed:
                     for bundle_index, button_rects in enumerate(button_rectangles):
@@ -147,6 +150,9 @@ def create_board(number_of_players: int, difficulty: int):
                         print(small_squares)
                         print(small_circles)
                         structure_placed = True
+                        alert = True
+           
+
 
 
                 for row in range(rows):
@@ -264,17 +270,27 @@ def create_board(number_of_players: int, difficulty: int):
             draw_buttons(button_rectangles, bundle_colors)
         else:
             draw_buttons(structures_button_rectangles[:-skip_black], structure_bundle_colors[:-skip_black])
-            if any((len(structures) == 6 and not hard, len(structures) == 8 and hard)):
-                draw_confirm_button()
+            # if any((len(structures) == 6 and not hard, len(structures) == 8 and hard)):
+            draw_confirm_button()
 
         for small_square in small_squares.keys():
             tile, color = small_square, small_squares[small_square]
             # print(clicked_tile, selected_color)
-            draw_small_square(screen, tile[0], tile[1], color, small_square_size, x_offset, y_offset)
-        for small_circle in small_circles.keys():
-            tile, color = small_circle, small_circles[small_circle]
-            draw_small_circle(screen, tile[0], tile[1], color, small_circle_size, x_offset, y_offset)
-
+            draw_small_square(screen, tile[0], tile[1], color, small_square_size, x_offset, y_offset + 30)
+        circle_offsets = (
+            (0, -30),
+            (30, -15),
+            (20, 30),
+            (-20, 30),
+            (-30, -15),
+        )
+        for coords in small_circles.keys():
+            for index, color in enumerate(small_circles[coords]):
+                #  color = small_circles[small_circle]
+                x_with_offset = x_offset + circle_offsets[index][0]
+                y_with_offset = y_offset + circle_offsets[index][1]
+                draw_small_circle(screen, coords[0], coords[1], color, small_circle_size, x_with_offset, y_with_offset)
+                 
         # Update the display
         pygame.display.flip()
 

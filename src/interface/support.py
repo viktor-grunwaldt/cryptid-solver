@@ -22,20 +22,17 @@ def remove_structure(main_board, clicked_tile):
 def draw_player_choice(clicked_tile, small_squares, small_circles, label, color):
     if clicked_tile and label == "False":
         # If the clicked_tile exists in small_circles, remove it from there
-        if clicked_tile in small_circles:
-            del small_circles[clicked_tile]
-
             # Add the clicked_tile to small_squares with the specified color
         small_squares[clicked_tile] = color
         print(small_squares)
 
     if clicked_tile and label == "True":
         # If the clicked_tile exists in small_squares, remove it from there
-        if clicked_tile in small_squares:
-            del small_squares[clicked_tile]
-
+        if clicked_tile not in small_circles:
+            small_circles[clicked_tile] = []
+        if color not in small_circles[clicked_tile]:
             # Add the clicked_tile to small_circles with the specified color
-        small_circles[clicked_tile] = color
+            small_circles[clicked_tile].append(color)
         print(small_circles)
 
 bundle_colors = [
