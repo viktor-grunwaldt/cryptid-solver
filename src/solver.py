@@ -61,13 +61,9 @@ def create_board(number_of_players: int, difficulty: int):
     if not hard:
         skip_black = 1
 
-    print(structure_bundle_colors[skip_black:])
     structures_button_rectangles = create_button_bundles(
-        screen, button_width, button_height, button_gap, bundle_gap, structure_bundle_colors[0:-skip_black]
+        screen, button_width, button_height, button_gap, bundle_gap, structure_bundle_colors
     ) 
-
-    left_side_buttons = create_left_side_button_bundle(screen)
-
     def get_board_width():
         return (3 / 2) * hex_size * (cols + 1)
     def get_board_height():
@@ -83,7 +79,7 @@ def create_board(number_of_players: int, difficulty: int):
 
     # Main loop
     running = True
-    clicked_tile = None
+    clicked_tile = tuple()
     selected_color = None
     small_squares = {}
     small_circles = {}
@@ -97,7 +93,7 @@ def create_board(number_of_players: int, difficulty: int):
             list_of_clues += file.read().splitlines()
 
     structure_placed = False
-
+    structures = {}
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -123,7 +119,7 @@ def create_board(number_of_players: int, difficulty: int):
                                     clicked_tile, small_squares, small_circles, label, color
                                 )
                 else:
-                    for bundle_index, button_rects in enumerate(structures_button_rectangles):
+                    for bundle_index, button_rects in enumerate(structures_button_rectangles[:-skip_black]):
                         for button_index, button_rect in enumerate(button_rects):
                             if button_rect.collidepoint(x, y):
                                 # Handle button click
@@ -132,7 +128,13 @@ def create_board(number_of_players: int, difficulty: int):
                                 print(
                                     f"Clicked a button at Bundle {bundle_index + 1}, Structure: {structure_type}, Color: {color}"
                                 )
-                                # print(main_board.grid[clicked_tile[0]][clicked_tile[1]])
+                                # add structure to the dictionary
+                                placed_structure = Structure(color, structure_type).name
+                                if placed_structure not in structures:
+                                    structures[placed_structure] = clicked_tile
+                                else:
+                                    main_board.grid[structures[placed_structure][0]][structures[placed_structure][1]].structure = None
+                                    structures[placed_structure] = clicked_tile
                                 
                                 main_board.grid[clicked_tile[0]][clicked_tile[1]].structure = Structure(
                                   get_key_by_value(colors, color)  , structure_type
@@ -145,6 +147,7 @@ def create_board(number_of_players: int, difficulty: int):
                         print(small_squares)
                         print(small_circles)
                         structure_placed = True
+
 
                 for row in range(rows):
                     for col in range(cols):
@@ -260,8 +263,9 @@ def create_board(number_of_players: int, difficulty: int):
         if structure_placed:
             draw_buttons(button_rectangles, bundle_colors)
         else:
-            draw_buttons(structures_button_rectangles, structure_bundle_colors)
-            draw_confirm_button()
+            draw_buttons(structures_button_rectangles[:-skip_black], structure_bundle_colors[:-skip_black])
+            if any((len(structures) == 6 and not hard, len(structures) == 8 and hard)):
+                draw_confirm_button()
 
         for small_square in small_squares.keys():
             tile, color = small_square, small_squares[small_square]

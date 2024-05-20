@@ -89,6 +89,7 @@ class Structure:
     def __init__(self, color: StructureColor, stype: StructureType):
         self.color = color
         self.type = stype
+        self.name = f"{color}-{stype}"
        
 
 
