@@ -30,3 +30,4 @@ The habitat is within two spaces of bear territory
 The habitat is within three spaces of a green structure
 The habitat is within three spaces of a white structure
 The habitat is within three spaces of a blue structure
+The habitat is within one space of either animal territory

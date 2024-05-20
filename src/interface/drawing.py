@@ -2,6 +2,7 @@ import pygame
 import math
 from interface.support import odd_q_to_pixel
 
+
 def draw_hexagon(screen, hex_size, x, y, color):
     pygame.draw.polygon(
         screen,
@@ -15,14 +16,19 @@ def draw_hexagon(screen, hex_size, x, y, color):
             (x + hex_size / 2, y + math.sqrt(3) / 2 * hex_size),
         ],
     )
-    
+
+
 def draw_pentagon(screen, pentagon_size, x, y, color):
     pentagon_points = [
-        (x + pentagon_size * math.cos(2 * math.pi * i / 5), y + pentagon_size * math.sin(2 * math.pi * i / 5))
+        (
+            x + pentagon_size * math.cos(2 * math.pi * i / 5),
+            y + pentagon_size * math.sin(2 * math.pi * i / 5),
+        )
         for i in range(5)
     ]
     pygame.draw.polygon(screen, color, pentagon_points)
-    
+
+
 def draw_square(screen, square_size, x, y, color):
     half_size = square_size / 2
     square_points = [
@@ -110,6 +116,7 @@ def draw_small_triangle(screen, row, col, color, triangle_size, x_offset, y_offs
     # Draw the filled triangle on top of the outline
     pygame.draw.polygon(screen, color, triangle_points)
 
+
 def draw_small_octagon(screen, row, col, color, octagon_size, x_offset, y_offset):
     x, y = odd_q_to_pixel(col, row)
     x += x_offset
@@ -129,3 +136,27 @@ def draw_small_octagon(screen, row, col, color, octagon_size, x_offset, y_offset
 
     # Draw the filled octagon on top of the outline
     pygame.draw.polygon(screen, color, vertices)
+
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GRAY = (100, 100, 100)
+
+
+def show_alert(screen, message, screen_width, screen_height, font):
+    alert_width, alert_height = 400, 200
+    alert_x = (screen_width - alert_width) // 2
+    alert_y = (screen_height - alert_height) // 2
+    alert_rect = pygame.Rect(alert_x, alert_y, alert_width, alert_height)
+
+    # Draw alert box
+    pygame.draw.rect(screen, GRAY, alert_rect)
+    pygame.draw.rect(screen, BLACK, alert_rect, 2)
+
+    # Render the message text
+    text_surface = font.render(message, True, BLACK)
+    text_rect = text_surface.get_rect(center=alert_rect.center)
+    screen.blit(text_surface, text_rect)
+
+    # Update the display
+    # pygame.display.flip()

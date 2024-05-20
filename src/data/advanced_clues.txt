@@ -32,3 +32,5 @@ The habitat is not within three spaces of a green structure
 The habitat is not within three spaces of a white structure
 The habitat is not within three spaces of a blue structure
 The habitat is not within three spaces of a black structure
+The habitat is not within one space of either animal territory
+

@@ -21,7 +21,6 @@ from enums import (
 )
 
 
-
 def generate_all_clues() -> list[Clue]:
     within_two = (
         StructureType.SHACK,
@@ -34,6 +33,7 @@ def generate_all_clues() -> list[Clue]:
     clues += [Clue(ClueType.WITHIN_TWO, e) for e in within_two]
     clues += [Clue(ClueType.WITHIN_THREE, e) for e in STRUCT_COLORS]
     return clues
+
 
 Grid = Annotated[
     List[List["Field"]],

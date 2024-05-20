@@ -1,6 +1,7 @@
 import unittest
 import board
 
+
 class Tests(unittest.TestCase):
     def test_self_inverse(self):
         orig = board.TILES[1]

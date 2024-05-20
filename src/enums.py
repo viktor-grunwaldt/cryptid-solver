@@ -143,3 +143,27 @@ PLAYER_COLORS = (
     PlayerColor.LIGHT_BLUE,
     PlayerColor.PURPLE,
 )
+colors = {
+    Biome.WATER: (97, 150, 202),  # blue for water
+    Biome.DESERT: (255, 212, 81),  # sandy brown for desert
+    Biome.MOUNTAIN: (185, 185, 185),  # brown for mountain
+    Biome.SWAMP: (117, 87, 115),  # dark purple for swamp
+    Biome.FOREST: (113, 173, 103),  # dark green for forest
+    StructureColor.BLACK: (0, 0, 0),  # black
+    StructureColor.BLUE: (0, 0, 255),  # blue
+    StructureColor.WHITE: (255, 255, 255),  # white
+    StructureColor.GREEN: (0, 128, 0),  # green
+}
+bundle_colors = [
+    (223, 66, 59),  # Red
+    (253, 201, 27),  # Orange
+    (52, 199, 206),  # Cyan
+    (174, 228, 255),  # Light blue
+    (126, 85, 207),  # Violet
+]
+structure_bundle_colors = [
+    (0, 0, 255),  # Blue
+    (255, 255, 255),  # White
+    (0, 128, 0),  # Green
+    (0, 0, 0),  # Black
+]

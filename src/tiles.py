@@ -27,8 +27,8 @@ class Tiles:
     def rotate(tile: list[str]) -> list[str]:
         return [s[::-1] for s in reversed(tile)]
 
-    def from_int(num:int) -> tuple[list[str], list[str]]:
-        assert num in range(1,7)
+    def from_int(num: int) -> tuple[list[str], list[str]]:
+        assert num in range(1, 7)
         return [
             (Tiles.tile1, Tiles.habitat1),
             (Tiles.tile2, Tiles.habitat2),
@@ -36,4 +36,4 @@ class Tiles:
             (Tiles.tile4, Tiles.habitat4),
             (Tiles.tile5, Tiles.habitat5),
             (Tiles.tile6, Tiles.habitat6),
-        ][num-1]
+        ][num - 1]
