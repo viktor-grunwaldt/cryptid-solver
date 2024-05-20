@@ -9,6 +9,7 @@ class Biome(Enum):
     FOREST = 3
     SWAMP = 4
 
+    @staticmethod
     def from_char(c: str):
         match c:
             case "d":
@@ -45,6 +46,7 @@ class Territory(Enum):
     BEAR = 1
     BOTH = 2
 
+    @staticmethod
     def from_char(c: str):
         match c:
             case "B":
@@ -103,15 +105,17 @@ class Structure:
 
 
 class Piece:
-    color: PlayerColor
-    type: PieceType
+    def __init__(self, color: PlayerColor, ptype: PieceType):
+        self.color = color
+        self.type = ptype
+        self.name = f"{color}-{ptype}"
 
 
 class Field:
     def __init__(
         self,
         biome: Biome,
-        territory: Territory,
+        territory: Optional[Territory],
         structure: Optional[Structure],
         pieces: Optional[list[Piece]],
     ):

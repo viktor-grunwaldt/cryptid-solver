@@ -1,5 +1,3 @@
-from enums import Biome
-
 """
 w = water
 d = desert
@@ -7,7 +5,6 @@ m = mountain
 s = swamp
 f = forest
 """
-
 
 class Tiles:
     tile1 = ["wwwwff", "sswdff", "ssdddf"]
@@ -24,9 +21,11 @@ class Tiles:
     habitat5 = ["xxxxxx", "xxxxxB", "xxxxBB"]
     habitat6 = ["Bxxxxx", "Bxxxxx", "xxxxxx"]
 
+    @staticmethod
     def rotate(tile: list[str]) -> list[str]:
         return [s[::-1] for s in reversed(tile)]
 
+    @staticmethod
     def from_int(num: int) -> tuple[list[str], list[str]]:
         assert num in range(1, 7)
         return [
