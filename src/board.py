@@ -1,5 +1,4 @@
 from typing import Optional, List, Annotated
-from attrs import define
 from itertools import combinations
 from more_itertools import chunked
 from tiles import Tiles
@@ -7,9 +6,13 @@ from tiles import Tiles
 from enums import (
     Biome,
     Territory,
+    Structure,
     StructureColor,
     StructureType,
+    Piece,
     PieceType,
+    Field,
+    Clue,
     ClueType,
     PlayerColor,
     ALL_BIOMES,
@@ -17,17 +20,6 @@ from enums import (
     PLAYER_COLORS,
 )
 
-
-@define
-class Structure:
-    color: StructureColor
-    type: StructureType
-
-
-@define
-class Clue:
-    clue_type: ClueType
-    data: tuple[Biome, Biome] | Biome | Territory | StructureColor | StructureType
 
 
 def generate_all_clues() -> list[Clue]:
@@ -42,21 +34,6 @@ def generate_all_clues() -> list[Clue]:
     clues += [Clue(ClueType.WITHIN_TWO, e) for e in within_two]
     clues += [Clue(ClueType.WITHIN_THREE, e) for e in STRUCT_COLORS]
     return clues
-
-
-@define
-class Piece:
-    color: PlayerColor
-    type: PieceType
-
-
-@define
-class Field:
-    biome: Biome
-    territory: Optional[Territory]
-    structure: Optional[Structure]
-    pieces: Optional[list[Piece]]
-
 
 Grid = Annotated[
     List[List["Field"]],

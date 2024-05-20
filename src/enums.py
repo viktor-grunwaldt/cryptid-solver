@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 
 class Biome(Enum):
@@ -66,6 +67,14 @@ class ClueType(Enum):
     WITHIN_THREE = 3
 
 
+class Clue(Enum):
+    def __init__(self, clue_type: ClueType, data: tuple):
+        self.clue_type: ClueType
+        self.data: (
+            tuple[Biome, Biome] | Biome | Territory | StructureColor | StructureType
+        )
+
+
 class StructureColor(Enum):
     BLACK = 0
     BLUE = 1
@@ -85,12 +94,31 @@ class PlayerColor(Enum):
     LIGHT_BLUE = 3
     PURPLE = 4
 
+
 class Structure:
     def __init__(self, color: StructureColor, stype: StructureType):
         self.color = color
         self.type = stype
         self.name = f"{color}-{stype}"
-       
+
+
+class Piece:
+    color: PlayerColor
+    type: PieceType
+
+
+class Field:
+    def __init__(
+        self,
+        biome: Biome,
+        territory: Territory,
+        structure: Optional[Structure],
+        pieces: Optional[list[Piece]],
+    ):
+        self.biome = biome
+        self.territory = territory
+        self.structure = structure
+        self.pieces = []
 
 
 ALL_BIOMES = (

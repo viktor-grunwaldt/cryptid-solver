@@ -1,9 +1,8 @@
-from enums import Biome, StructureColor
+from enums import Biome, StructureColor, Structure
 import math
 
 import sys
 sys.path.append("..")
-from board import Structure
 
 def odd_q_to_pixel(q, r, hex_size=50):
     x = (3 / 2) * hex_size * q
