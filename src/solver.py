@@ -26,7 +26,6 @@ class GameState:
     # this could be moved to config file?
     screen_width = 1400
     screen_height = 1000
-    font = pygame.font.Font(None, 36)
     cols = Board.width
     rows = Board.height
     # Define button dimensions
@@ -53,6 +52,7 @@ class GameState:
     def __init__(self, number_of_players: int, difficulty: int):
         hard = difficulty == 1
         self.skip_black = 0 if hard else 1
+        self.font = pygame.font.Font(None, 36)
         print(f"Difficulty: {difficulty}, Hard: {hard}")
         self.main_board = Board()
 
