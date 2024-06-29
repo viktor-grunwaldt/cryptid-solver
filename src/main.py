@@ -7,7 +7,6 @@ from pygame_menu import Menu, themes
 
 
 def main():
-
     os.environ["SDL_VIDEO_WINDOW_POS"] = "%d,%d" % (10, 10)
 
     pygame.init()
@@ -16,9 +15,6 @@ def main():
     screen = pygame.display.set_mode((500, 300))
 
     pygame.display.set_caption("Cryptid Solver")
-
-    # Set up fonts
-    font = pygame.font.Font(None, 36)
 
     # Set up colors
     white = (255, 255, 255)
@@ -56,7 +52,7 @@ def main():
 
     # Function to start the game
     def start_game():
-        solver.create_board(num_players, difficulty)
+        solver.run(solver.GameState(num_players, difficulty))
         menu.disable()
 
     # Add a confirm button

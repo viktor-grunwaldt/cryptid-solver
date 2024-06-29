@@ -22,109 +22,110 @@ from interface.support import (
 from src.enums import bundle_colors, colors, structure_bundle_colors
 
 
-def create_board(number_of_players: int, difficulty: int):
-
-    hard = False
-    if difficulty == 1:
-        hard = True
-
-    print(f"Difficulty: {difficulty}, Hard: {hard}")
-
-    # Define the screen dimensions
-    screen_width, screen_height = 1400, 1000
-
-    main_board = Board()
-
+class GameState:
+    # this could be moved to config file?
+    screen_width = 1400
+    screen_height = 1000
+    font = pygame.font.Font(None, 36)
     cols = Board.width
     rows = Board.height
-
-    font = pygame.font.Font(None, 36)
-
-    # Create the screen
-    screen = pygame.display.set_mode((screen_width, screen_height), 0, 0)
-    pygame.display.set_caption("Cryptid Solver")
-
     # Define button dimensions
-    button_width, button_height = 100, 40  # Adjust button size as needed
-
-    # Define the gap between button bundles and between buttons within a bundle
+    button_width = 100
+    button_height = 40  # Adjust button size as needed
     bundle_gap = 40
     button_gap = 20
-
+    # Define the gap between button bundles and between buttons within a bundle
     small_square_size = 10
     small_circle_size = 7
     small_triangle_size = 20
     small_octagon_size = 20
-
     # Define the size of each hexagon and the gap between hexagons
     hex_size = 50
     hex_gap = 5
-    # Get the button rectangles using the function from button_bundle.py
-    button_rectangles = create_button_bundles(
-        screen,
-        button_width,
-        button_height,
-        button_gap,
-        bundle_gap,
-        bundle_colors[0:number_of_players],
-    )
-    skip_black = 0
-    if not hard:
-        skip_black = 1
-
-    structures_button_rectangles = create_button_bundles(
-        screen,
-        button_width,
-        button_height,
-        button_gap,
-        bundle_gap,
-        structure_bundle_colors,
+    circle_offsets = (
+        (0, -30),
+        (30, -15),
+        (20, 30),
+        (-20, 30),
+        (-30, -15),
     )
 
-    def get_board_width():
-        return (3 / 2) * hex_size * (cols + 1)
+    def __init__(self, number_of_players: int, difficulty: int):
+        hard = difficulty == 1
+        self.skip_black = 0 if hard else 1
+        print(f"Difficulty: {difficulty}, Hard: {hard}")
+        self.main_board = Board()
 
-    def get_board_height():
-        return math.sqrt(3) * hex_size * (rows + 1)
+        # Create the screen
+        self.screen = pygame.display.set_mode(
+            (self.screen_width, self.screen_height), 0, 0
+        )
+        pygame.display.set_caption("Cryptid Solver")
+
+        # Get the button rectangles using the function from button_bundle.py
+        self.button_rectangles = create_button_bundles(
+            self.screen,
+            self.button_width,
+            self.button_height,
+            self.button_gap,
+            self.bundle_gap,
+            bundle_colors[0:number_of_players],
+        )
+
+        self.structures_button_rectangles = create_button_bundles(
+            self.screen,
+            self.button_width,
+            self.button_height,
+            self.button_gap,
+            self.bundle_gap,
+            structure_bundle_colors,
+        )
+
+        # Main loop
+        self.running = True
+        self.clicked_tile = tuple()
+        self.small_squares = {}
+        self.small_circles = {}
+        self.structure_placed = False
+        self.alert = False
+        self.structures = {}
+
+        self.list_of_clues = []
+        filename = "data/normal_clues.txt" if not hard else "data/advanced_clues.txt"
+        with open(filename, "r") as f:
+            self.list_of_clues = f.read().splitlines()
+
+    def get_board_width(self) -> float:
+        return (3 / 2) * self.hex_size * (self.cols + 1)
+
+    def get_board_height(self) -> float:
+        return math.sqrt(3) * self.hex_size * (self.rows + 1)
 
     # Function to center the board on the screen
-    def center_board(screen_width, screen_height, cols, rows):
-        x_offset = (screen_width - get_board_width()) // 2
-        y_offset = (screen_height - get_board_height()) // 2
+    def get_board_offset(self) -> tuple[float, float]:
+        x_offset = (self.screen_width - self.get_board_width()) / 2
+        y_offset = (self.screen_height - self.get_board_height()) / 2
 
         return x_offset, y_offset
 
-    # Main loop
-    running = True
-    clicked_tile = tuple()
-    small_squares = {}
-    small_circles = {}
 
-    list_of_clues = []
-
-    with open("data/normal_clues.txt", "r") as file:
-        list_of_clues = file.read().splitlines()
-    if hard:
-        with open("data/advanced_clues.txt", "r") as file:
-            list_of_clues += file.read().splitlines()
-
-    structure_placed = False
-    alert = False
-    structures = {}
-    while running:
+def run(s: GameState):
+    while s.running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                s.running = False
 
             if event.type == pygame.KEYDOWN:
-                key_pressed(main_board, clicked_tile, small_squares, small_circles)
+                key_pressed(
+                    s.main_board, s.clicked_tile, s.small_squares, s.small_circles
+                )
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Check if any button is clicked
 
                 x, y = event.pos
-                if structure_placed:
-                    for bundle_index, button_rects in enumerate(button_rectangles):
+                if s.structure_placed:
+                    for bundle_index, button_rects in enumerate(s.button_rectangles):
                         for button_index, button_rect in enumerate(button_rects):
                             if button_rect.collidepoint(x, y):
                                 # Handle button click
@@ -134,15 +135,15 @@ def create_board(number_of_players: int, difficulty: int):
                                     f"Clicked a button at Bundle {bundle_index + 1}, Label: {label}, Color: {color}"
                                 )
                                 draw_player_choice(
-                                    clicked_tile,
-                                    small_squares,
-                                    small_circles,
+                                    s.clicked_tile,
+                                    s.small_squares,
+                                    s.small_circles,
                                     label,
                                     color,
                                 )
                 else:
                     for bundle_index, button_rects in enumerate(
-                        structures_button_rectangles[:-skip_black]
+                        s.structures_button_rectangles[: -s.skip_black]
                     ):
                         for button_index, button_rect in enumerate(button_rects):
                             if button_rect.collidepoint(x, y):
@@ -157,63 +158,67 @@ def create_board(number_of_players: int, difficulty: int):
                                     f"Clicked a button at Bundle {bundle_index + 1}, Structure: {structure_type}, Color: {color}"
                                 )
                                 placed_structure = Structure(color, structure_type).name
-                                if placed_structure not in structures:
-                                    structures[placed_structure] = clicked_tile
+                                if placed_structure not in s.structures:
+                                    s.structures[placed_structure] = s.clicked_tile
                                 else:
                                     remove_structure(
-                                        main_board.grid, structures[placed_structure]
+                                        s.main_board.grid,
+                                        s.structures[placed_structure],
                                     )
-                                    structures[placed_structure] = clicked_tile
+                                    s.structures[placed_structure] = s.clicked_tile
 
-                                main_board.grid[clicked_tile[0]][
-                                    clicked_tile[1]
+                                s.main_board.grid[s.clicked_tile[0]][
+                                    s.clicked_tile[1]
                                 ].structure = Structure(
                                     get_key_by_value(colors, color), structure_type
                                 )
 
                     if pygame.Rect(
-                        screen.get_width() - button_width - bundle_gap,
-                        screen.get_height() - button_height - bundle_gap,
-                        button_width,
-                        button_height,
+                        s.screen.get_width() - s.button_width - s.bundle_gap,
+                        s.screen.get_height() - s.button_height - s.bundle_gap,
+                        s.button_width,
+                        s.button_height,
                     ).collidepoint(x, y):
                         print("Confirm button clicked")
-                        print(small_squares)
-                        print(small_circles)
+                        print(s.small_squares)
+                        print(s.small_circles)
                         structure_placed = True
 
-                for row in range(rows):
-                    for col in range(cols):
+                for row in range(s.rows):
+                    for col in range(s.cols):
                         x, y = event.pos
                         tile_x, tile_y = odd_q_to_pixel(col, row)
+                        x_offset, y_offset = s.get_board_offset()
                         tile_x += x_offset
                         tile_y += y_offset
                         # Check if the mouse click is within the tile's bounding rectangle
                         if (
-                            abs(x - tile_x) < hex_size
-                            and abs(y - tile_y) < hex_size * math.sqrt(3) / 2
+                            abs(x - tile_x) < s.hex_size
+                            and abs(y - tile_y) < s.hex_size * math.sqrt(3) / 2
                         ):
                             clicked_tile = (row, col)
                             print(f"Clicked tile: {clicked_tile}")
 
         # Clear the screen
-        screen.fill((255, 255, 255))
+        s.screen.fill((255, 255, 255))
 
         # Center the board on the screen
-        x_offset, y_offset = center_board(screen_width, screen_height, cols, rows)
+        x_offset, y_offset = s.get_board_offset()
 
         # display clues
         if structure_placed:
             text_offset = 100
-            for clue in list_of_clues:
-                num_players_text = font.render(f"{clue}", True, (0, 0, 0))
-                screen.blit(num_players_text, (get_board_width() + 150, text_offset))
+            for clue in s.list_of_clues:
+                num_players_text = s.font.render(f"{clue}", True, (0, 0, 0))
+                s.screen.blit(
+                    num_players_text, (s.get_board_width() + 150, text_offset)
+                )
                 text_offset += 20
         # Draw each hexagon on the screen
-        for row in range(rows):
-            for col in range(cols):
+        for row in range(s.rows):
+            for col in range(s.cols):
                 # print(f'{row}/{rows}', f'{col}/{cols}')
-                value = main_board.grid[row][col]
+                value = s.main_board.grid[row][col]
                 # print(main_board.grid)
                 # print(value)
                 color = colors.get(value.biome, (255, 255, 255))
@@ -223,36 +228,36 @@ def create_board(number_of_players: int, difficulty: int):
 
                 if clicked_tile == (row, col):
                     lighter_color = [min(c + 50, 255) for c in color]
-                    draw_hexagon(screen, hex_size, x, y, lighter_color)
+                    draw_hexagon(s.screen, s.hex_size, x, y, lighter_color)
                 else:
-                    draw_hexagon(screen, hex_size, x, y, color)
+                    draw_hexagon(s.screen, s.hex_size, x, y, color)
                 if value.territory is not None:
                     if value.territory == Territory.COUGAR:
                         draw_lines_close_to_hexagon_edges(
-                            screen, hex_size, x, y, 2, (255, 0, 0)
+                            s.screen, s.hex_size, x, y, 2, (255, 0, 0)
                         )
                     elif value.territory == Territory.BEAR:
                         draw_lines_close_to_hexagon_edges(
-                            screen, hex_size, x, y, 2, (0, 0, 0)
+                            s.screen, s.hex_size, x, y, 2, (0, 0, 0)
                         )
                 if value.structure is not None:
                     if value.structure.type == StructureType.STONE:
                         draw_small_octagon(
-                            screen,
+                            s.screen,
                             row,
                             col,
                             colors[value.structure.color],
-                            small_octagon_size,
+                            s.small_octagon_size,
                             x_offset,
                             y_offset,
                         )
                     elif value.structure.type == StructureType.SHACK:
                         draw_small_triangle(
-                            screen,
+                            s.screen,
                             row,
                             col,
                             colors[value.structure.color],
-                            small_triangle_size,
+                            s.small_triangle_size,
                             x_offset,
                             y_offset,
                         )
@@ -261,26 +266,27 @@ def create_board(number_of_players: int, difficulty: int):
             # Draw the button bundles on the screen if structured are placed
             for bundle_index, button_rects in enumerate(buttons):
                 bundle_x = (
-                    bundle_index * (button_width * 2 + button_gap * 2) + bundle_gap
+                    bundle_index * (s.button_width * 2 + s.button_gap * 2)
+                    + s.bundle_gap
                 )
-                bundle_y = screen_height - button_height - bundle_gap
+                bundle_y = s.screen_height - s.button_height - s.bundle_gap
                 for button_index, button_rect in enumerate(button_rects):
-                    button_x = bundle_x + (button_width + button_gap) * button_index
+                    button_x = bundle_x + (s.button_width + s.button_gap) * button_index
                     button_y = bundle_y
                     pygame.draw.rect(
-                        screen,
+                        s.screen,
                         (0, 0, 0),  # Black color for the border
                         (
                             button_x - 2,
                             button_y - 2,
-                            button_width + 4,
-                            button_height + 4,
+                            s.button_width + 4,
+                            s.button_height + 4,
                         ),  # Larger rectangle for the border
                     )
                     pygame.draw.rect(
-                        screen,
+                        s.screen,
                         colors[bundle_index],
-                        (button_x, button_y, button_width, button_height),
+                        (button_x, button_y, s.button_width, s.button_height),
                     )
                     font = pygame.font.Font(None, 24)
                     if structure_placed:
@@ -293,77 +299,70 @@ def create_board(number_of_players: int, difficulty: int):
                         text = font.render(label, True, (255, 255, 255))
                     text_rect = text.get_rect(
                         center=(
-                            button_x + button_width // 2,
-                            button_y + button_height // 2,
+                            button_x + s.button_width // 2,
+                            button_y + s.button_height // 2,
                         )
                     )
-                    screen.blit(text, text_rect)
+                    s.screen.blit(text, text_rect)
 
         def draw_confirm_button():
-            button_x = screen.get_width() - button_width - bundle_gap
-            button_y = screen.get_height() - button_height - bundle_gap
+            button_x = s.screen.get_width() - s.button_width - s.bundle_gap
+            button_y = s.screen.get_height() - s.button_height - s.bundle_gap
             pygame.draw.rect(
-                screen,
+                s.screen,
                 (0, 0, 0),  # Black color for the border
                 (
                     button_x - 2,
                     button_y - 2,
-                    button_width + 4,
-                    button_height + 4,
+                    s.button_width + 4,
+                    s.button_height + 4,
                 ),  # Larger rectangle for the border
             )
             pygame.draw.rect(
-                screen,
+                s.screen,
                 (255, 255, 255),
-                (button_x, button_y, button_width, button_height),
+                (button_x, button_y, s.button_width, s.button_height),
             )
             font = pygame.font.Font(None, 24)
             text = font.render("Confirm", True, (0, 0, 0))
             text_rect = text.get_rect(
-                center=(button_x + button_width // 2, button_y + button_height // 2)
+                center=(button_x + s.button_width // 2, button_y + s.button_height // 2)
             )
-            screen.blit(text, text_rect)
+            s.screen.blit(text, text_rect)
 
         if structure_placed:
-            draw_buttons(button_rectangles, bundle_colors)
+            draw_buttons(s.button_rectangles, bundle_colors)
         else:
             draw_buttons(
-                structures_button_rectangles[:-skip_black],
-                structure_bundle_colors[:-skip_black],
+                s.structures_button_rectangles[: -s.skip_black],
+                structure_bundle_colors[: -s.skip_black],
             )
             # if any((len(structures) == 6 and not hard, len(structures) == 8 and hard)):
             draw_confirm_button()
 
-        for small_square in small_squares.keys():
-            tile, color = small_square, small_squares[small_square]
+        for small_square in s.small_squares.keys():
+            tile, color = small_square, s.small_squares[small_square]
             # print(clicked_tile, selected_color)
             draw_small_square(
-                screen,
+                s.screen,
                 tile[0],
                 tile[1],
                 color,
-                small_square_size,
+                s.small_square_size,
                 x_offset,
                 y_offset + 30,
             )
-        circle_offsets = (
-            (0, -30),
-            (30, -15),
-            (20, 30),
-            (-20, 30),
-            (-30, -15),
-        )
-        for coords in small_circles.keys():
-            for index, color in enumerate(small_circles[coords]):
+        for coords in s.small_circles.keys():
+            for index, color in enumerate(s.small_circles[coords]):
                 #  color = small_circles[small_circle]
-                x_with_offset = x_offset + circle_offsets[index][0]
-                y_with_offset = y_offset + circle_offsets[index][1]
+                x_with_offset = x_offset + s.circle_offsets[index][0]
+                y_with_offset = y_offset + s.circle_offsets[index][1]
                 draw_small_circle(
-                    screen,
+                    s.screen,
                     coords[0],
                     coords[1],
                     color,
-                    small_circle_size,
+                    s.small_circle_size,
                     x_with_offset,
                     y_with_offset,
                 )
