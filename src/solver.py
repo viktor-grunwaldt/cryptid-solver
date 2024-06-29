@@ -1,7 +1,7 @@
-from os import remove
+import os
 import pygame
 import math
-from interface.buttons import create_button_bundles, create_left_side_button_bundle
+from interface.buttons import create_button_bundles
 from board import Board
 from enums import StructureType, Territory, Structure
 from interface.drawing import (
@@ -19,7 +19,7 @@ from interface.support import (
     get_key_by_value,
     remove_structure,
 )
-from src.enums import bundle_colors, colors, structure_bundle_colors
+from enums import bundle_colors, colors, structure_bundle_colors
 
 
 class GameState:
@@ -92,7 +92,7 @@ class GameState:
 
         self.list_of_clues = []
         filename = "data/normal_clues.txt" if not hard else "data/advanced_clues.txt"
-        with open(filename, "r") as f:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), filename), "r") as f:
             self.list_of_clues = f.read().splitlines()
 
     def get_board_width(self) -> float:
@@ -107,6 +107,83 @@ class GameState:
         y_offset = (self.screen_height - self.get_board_height()) / 2
 
         return x_offset, y_offset
+
+def draw_buttons(s: GameState, structures=False):
+    buttons = None
+    colors = None
+    if s.structure_placed:
+        buttons = s.button_rectangles
+        colors = bundle_colors
+    else:
+        buttons = s.structures_button_rectangles[: -s.skip_black]
+        colors = structure_bundle_colors[: -s.skip_black]
+        draw_confirm_button(s)
+
+
+    # Draw the button bundles on the screen if structured are placed
+    for bundle_index, button_rects in enumerate(buttons):
+        bundle_x = bundle_index * (s.button_width * 2 + s.button_gap * 2) + s.bundle_gap
+        bundle_y = s.screen_height - s.button_height - s.bundle_gap
+        for button_index, button_rect in enumerate(button_rects):
+            button_x = bundle_x + (s.button_width + s.button_gap) * button_index
+            button_y = bundle_y
+            pygame.draw.rect(
+                s.screen,
+                (0, 0, 0),  # Black color for the border
+                (
+                    button_x - 2,
+                    button_y - 2,
+                    s.button_width + 4,
+                    s.button_height + 4,
+                ),  # Larger rectangle for the border
+            )
+            pygame.draw.rect(
+                s.screen,
+                colors[bundle_index],
+                (button_x, button_y, s.button_width, s.button_height),
+            )
+            font = pygame.font.Font(None, 24)
+            if s.structure_placed:
+                label = "True" if button_index == 0 else "False"
+            else:
+                label = "Shack" if button_index == 0 else "Stone"
+            if colors[bundle_index] == (255, 255, 255):
+                text = font.render(label, True, (0, 0, 0))
+            else:
+                text = font.render(label, True, (255, 255, 255))
+            text_rect = text.get_rect(
+                center=(
+                    button_x + s.button_width // 2,
+                    button_y + s.button_height // 2,
+                )
+            )
+            s.screen.blit(text, text_rect)
+
+
+def draw_confirm_button(s: GameState):
+    button_x = s.screen.get_width() - s.button_width - s.bundle_gap
+    button_y = s.screen.get_height() - s.button_height - s.bundle_gap
+    pygame.draw.rect(
+        s.screen,
+        (0, 0, 0),  # Black color for the border
+        (
+            button_x - 2,
+            button_y - 2,
+            s.button_width + 4,
+            s.button_height + 4,
+        ),  # Larger rectangle for the border
+    )
+    pygame.draw.rect(
+        s.screen,
+        (255, 255, 255),
+        (button_x, button_y, s.button_width, s.button_height),
+    )
+    font = pygame.font.Font(None, 24)
+    text = font.render("Confirm", True, (0, 0, 0))
+    text_rect = text.get_rect(
+        center=(button_x + s.button_width // 2, button_y + s.button_height // 2)
+    )
+    s.screen.blit(text, text_rect)
 
 
 def run(s: GameState):
@@ -262,83 +339,7 @@ def run(s: GameState):
                             y_offset,
                         )
 
-        def draw_buttons(buttons, colors, structures=False):
-            # Draw the button bundles on the screen if structured are placed
-            for bundle_index, button_rects in enumerate(buttons):
-                bundle_x = (
-                    bundle_index * (s.button_width * 2 + s.button_gap * 2)
-                    + s.bundle_gap
-                )
-                bundle_y = s.screen_height - s.button_height - s.bundle_gap
-                for button_index, button_rect in enumerate(button_rects):
-                    button_x = bundle_x + (s.button_width + s.button_gap) * button_index
-                    button_y = bundle_y
-                    pygame.draw.rect(
-                        s.screen,
-                        (0, 0, 0),  # Black color for the border
-                        (
-                            button_x - 2,
-                            button_y - 2,
-                            s.button_width + 4,
-                            s.button_height + 4,
-                        ),  # Larger rectangle for the border
-                    )
-                    pygame.draw.rect(
-                        s.screen,
-                        colors[bundle_index],
-                        (button_x, button_y, s.button_width, s.button_height),
-                    )
-                    font = pygame.font.Font(None, 24)
-                    if s.structure_placed:
-                        label = "True" if button_index == 0 else "False"
-                    else:
-                        label = "Shack" if button_index == 0 else "Stone"
-                    if colors[bundle_index] == (255, 255, 255):
-                        text = font.render(label, True, (0, 0, 0))
-                    else:
-                        text = font.render(label, True, (255, 255, 255))
-                    text_rect = text.get_rect(
-                        center=(
-                            button_x + s.button_width // 2,
-                            button_y + s.button_height // 2,
-                        )
-                    )
-                    s.screen.blit(text, text_rect)
-
-        def draw_confirm_button():
-            button_x = s.screen.get_width() - s.button_width - s.bundle_gap
-            button_y = s.screen.get_height() - s.button_height - s.bundle_gap
-            pygame.draw.rect(
-                s.screen,
-                (0, 0, 0),  # Black color for the border
-                (
-                    button_x - 2,
-                    button_y - 2,
-                    s.button_width + 4,
-                    s.button_height + 4,
-                ),  # Larger rectangle for the border
-            )
-            pygame.draw.rect(
-                s.screen,
-                (255, 255, 255),
-                (button_x, button_y, s.button_width, s.button_height),
-            )
-            font = pygame.font.Font(None, 24)
-            text = font.render("Confirm", True, (0, 0, 0))
-            text_rect = text.get_rect(
-                center=(button_x + s.button_width // 2, button_y + s.button_height // 2)
-            )
-            s.screen.blit(text, text_rect)
-
-        if s.structure_placed:
-            draw_buttons(s.button_rectangles, bundle_colors)
-        else:
-            draw_buttons(
-                s.structures_button_rectangles[: -s.skip_black],
-                structure_bundle_colors[: -s.skip_black],
-            )
-            # if any((len(structures) == 6 and not hard, len(structures) == 8 and hard)):
-            draw_confirm_button()
+        draw_buttons(s)
 
         for small_square in s.small_squares.keys():
             tile, color = small_square, s.small_squares[small_square]
@@ -372,3 +373,6 @@ def run(s: GameState):
 
     # Quit pygame and exit the program
     pygame.quit()
+
+
+

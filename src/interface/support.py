@@ -1,6 +1,5 @@
 from enums import Structure
 import math
-
 import sys
 
 sys.path.append("..")

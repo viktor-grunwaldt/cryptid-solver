@@ -1,7 +1,7 @@
 import pygame
 from interface.support import draw_player_choice, remove_structure
 from enums import StructureType, StructureColor
-from src.enums import bundle_colors
+from enums import bundle_colors
 
 
 def key_pressed(main_board, clicked_tile, squares, circles):
