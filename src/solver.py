@@ -221,7 +221,7 @@ def run(s: GameState):
                 value = s.main_board.grid[row][col]
                 # print(main_board.grid)
                 # print(value)
-                color = colors.get(value.biome, (255, 255, 255))
+                color = value.biome.get_color()
                 x, y = odd_q_to_pixel(col, row)
                 x += x_offset
                 y += y_offset

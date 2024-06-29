@@ -39,6 +39,19 @@ class Biome(Enum):
                 return "w"
             case _:
                 raise Exception("Not reachable!")
+    def get_color(self):
+        match self:
+            case Biome.WATER: 
+                return (97, 150, 202)  # blue for water
+            case Biome.DESERT: 
+                return (255, 212, 81)  # sandy brown for desert
+            case Biome.MOUNTAIN: 
+                return (185, 185, 185)  # brown for mountain
+            case Biome.SWAMP: 
+                return (117, 87, 115)  # dark purple for swamp
+            case Biome.FOREST: 
+                return (113, 173, 103)  # dark green for forest
+
 
 
 class Territory(Enum):
