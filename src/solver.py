@@ -182,7 +182,7 @@ def run(s: GameState):
                         print("Confirm button clicked")
                         print(s.small_squares)
                         print(s.small_circles)
-                        structure_placed = True
+                        s.structure_placed = True
 
                 for row in range(s.rows):
                     for col in range(s.cols):
@@ -196,8 +196,8 @@ def run(s: GameState):
                             abs(x - tile_x) < s.hex_size
                             and abs(y - tile_y) < s.hex_size * math.sqrt(3) / 2
                         ):
-                            clicked_tile = (row, col)
-                            print(f"Clicked tile: {clicked_tile}")
+                            s.clicked_tile = (row, col)
+                            print(f"Clicked tile: {s.clicked_tile}")
 
         # Clear the screen
         s.screen.fill((255, 255, 255))
@@ -206,7 +206,7 @@ def run(s: GameState):
         x_offset, y_offset = s.get_board_offset()
 
         # display clues
-        if structure_placed:
+        if s.structure_placed:
             text_offset = 100
             for clue in s.list_of_clues:
                 num_players_text = s.font.render(f"{clue}", True, (0, 0, 0))
@@ -226,7 +226,7 @@ def run(s: GameState):
                 x += x_offset
                 y += y_offset
 
-                if clicked_tile == (row, col):
+                if s.clicked_tile == (row, col):
                     lighter_color = [min(c + 50, 255) for c in color]
                     draw_hexagon(s.screen, s.hex_size, x, y, lighter_color)
                 else:
@@ -289,7 +289,7 @@ def run(s: GameState):
                         (button_x, button_y, s.button_width, s.button_height),
                     )
                     font = pygame.font.Font(None, 24)
-                    if structure_placed:
+                    if s.structure_placed:
                         label = "True" if button_index == 0 else "False"
                     else:
                         label = "Shack" if button_index == 0 else "Stone"
@@ -330,7 +330,7 @@ def run(s: GameState):
             )
             s.screen.blit(text, text_rect)
 
-        if structure_placed:
+        if s.structure_placed:
             draw_buttons(s.button_rectangles, bundle_colors)
         else:
             draw_buttons(
