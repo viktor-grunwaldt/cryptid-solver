@@ -11,47 +11,13 @@ class Biome(Enum):
 
     @staticmethod
     def from_char(c: str):
-        match c:
-            case "d":
-                return Biome.DESERT
-            case "w":
-                return Biome.WATER
-            case "m":
-                return Biome.MOUNTAIN
-            case "f":
-                return Biome.FOREST
-            case "s":
-                return Biome.SWAMP
-            case _:
-                return None
+        return CHAR_TO_BIOME.get(c)
 
     def to_char(self) -> str:
-        match self:
-            case Biome.DESERT:
-                return "d"
-            case Biome.FOREST:
-                return "f"
-            case Biome.MOUNTAIN:
-                return "m"
-            case Biome.SWAMP:
-                return "s"
-            case Biome.WATER:
-                return "w"
-            case _:
-                raise Exception("Not reachable!")
-    def get_color(self):
-        match self:
-            case Biome.WATER: 
-                return (97, 150, 202)  # blue for water
-            case Biome.DESERT: 
-                return (255, 212, 81)  # sandy brown for desert
-            case Biome.MOUNTAIN: 
-                return (185, 185, 185)  # brown for mountain
-            case Biome.SWAMP: 
-                return (117, 87, 115)  # dark purple for swamp
-            case Biome.FOREST: 
-                return (113, 173, 103)  # dark green for forest
+        return BIOME_TO_CHAR[self]
 
+    def get_color(self) -> tuple[int, int, int]:
+        return BIOME_COLORS_DICT[self]
 
 
 class Territory(Enum):
@@ -138,20 +104,33 @@ class Field:
         self.pieces = []
 
 
-ALL_BIOMES = (
-    Biome.DESERT,
-    Biome.FOREST,
-    Biome.MOUNTAIN,
-    Biome.SWAMP,
-    Biome.WATER,
-)
+BIOME_TO_CHAR = {
+    Biome.DESERT: "d",
+    Biome.WATER: "w",
+    Biome.MOUNTAIN: "m",
+    Biome.FOREST: "f",
+    Biome.SWAMP: "s",
+}
 
-STRUCT_COLORS = (
-    StructureColor.BLACK,
-    StructureColor.BLUE,
-    StructureColor.WHITE,
-    StructureColor.GREEN,
-)
+CHAR_TO_BIOME = {v: k for k, v in BIOME_TO_CHAR.items()}
+BIOME_COLORS_DICT = {
+    Biome.WATER: (97, 150, 202),  # blue for water
+    Biome.DESERT: (255, 212, 81),  # sandy brown for desert
+    Biome.MOUNTAIN: (185, 185, 185),  # brown for mountain
+    Biome.SWAMP: (117, 87, 115),  # dark purple for swamp
+    Biome.FOREST: (113, 173, 103),  # dark green for forest
+}
+
+ALL_BIOMES = tuple(CHAR_TO_BIOME.keys())
+
+STRUCT_COLORS_DICT = {
+    StructureColor.BLUE: (0, 0, 255),  # blue
+    StructureColor.WHITE: (255, 255, 255),  # white
+    StructureColor.GREEN: (0, 128, 0),  # green
+    StructureColor.BLACK: (0, 0, 0),  # black
+}
+
+STRUCT_COLORS = tuple(STRUCT_COLORS_DICT.keys())
 
 PLAYER_COLORS = (
     PlayerColor.RED,
@@ -160,17 +139,9 @@ PLAYER_COLORS = (
     PlayerColor.LIGHT_BLUE,
     PlayerColor.PURPLE,
 )
-colors = {
-    Biome.WATER: (97, 150, 202),  # blue for water
-    Biome.DESERT: (255, 212, 81),  # sandy brown for desert
-    Biome.MOUNTAIN: (185, 185, 185),  # brown for mountain
-    Biome.SWAMP: (117, 87, 115),  # dark purple for swamp
-    Biome.FOREST: (113, 173, 103),  # dark green for forest
-    StructureColor.BLACK: (0, 0, 0),  # black
-    StructureColor.BLUE: (0, 0, 255),  # blue
-    StructureColor.WHITE: (255, 255, 255),  # white
-    StructureColor.GREEN: (0, 128, 0),  # green
-}
+
+
+colors = BIOME_COLORS_DICT | STRUCT_COLORS_DICT
 bundle_colors = [
     (223, 66, 59),  # Red
     (253, 201, 27),  # Orange
@@ -178,9 +149,4 @@ bundle_colors = [
     (174, 228, 255),  # Light blue
     (126, 85, 207),  # Violet
 ]
-structure_bundle_colors = [
-    (0, 0, 255),  # Blue
-    (255, 255, 255),  # White
-    (0, 128, 0),  # Green
-    (0, 0, 0),  # Black
-]
+structure_bundle_colors = tuple(STRUCT_COLORS_DICT.values())
